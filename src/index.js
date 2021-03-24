@@ -11,14 +11,56 @@ const users = [];
 
 function checksExistsUserAccount(request, response, next) {
   // Complete aqui
+  const { username } = request.headers;
+
+  const user = users.find( ( user ) => user.username === username );
+
+  if(!user){
+    return response.status(404).json({ error: "User not found!" });
+  }
+
+  request.user = user;
+  return next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
   // Complete aqui
+  const { user }    = request;
+  const limitedTODO = 10;
+  
+  const totalTODO   = user.todos.reduce(soma => soma++, 0);
+  
+  if( user.pro || totalTODO >= limitedTODO ){
+    return response.status(403).json({ error: "Não pode continuar, excedido o n° limite de TODOS. "});
+  }
+
+  request.user = user;
+  return next();
 }
 
 function checksTodoExists(request, response, next) {
   // Complete aqui
+  const { username } = request.headers;
+  const { idTODO }   = request.params;
+
+  const user = users.find( user => user.username === username );
+  if(!user){
+    return response.status(404).json({ error: "User not found! "});
+  }
+
+  if(!validate(idTODO)){
+    return response.status(400).json({ error: " Informed ID is not a valid! "})
+  }
+
+  const todo = user.todos.find( todo => todo.id === idTODO );
+  if(!todo){
+    return response.status(404).json({ error: "Todo not found for that user! "});
+  }
+
+  request.user = user;
+  request.todo = todo;
+
+  return next();
 }
 
 function findUserById(request, response, next) {
