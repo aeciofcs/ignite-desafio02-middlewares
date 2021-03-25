@@ -27,11 +27,10 @@ function checksCreateTodosUserAvailability(request, response, next) {
   // Complete aqui
   const { user }    = request;
   const limitedTODO = 10;
+  const totalTODO   = user.todos.length;
   
-  const totalTODO   = user.todos.reduce(soma => soma++, 0);
-  
-  if( user.pro || totalTODO >= limitedTODO ){
-    return response.status(403).json({ error: "Não pode continuar, excedido o n° limite de TODOS. "});
+  if( !user.pro && totalTODO >= limitedTODO ){
+    return response.status(403).json({ error: "limit exceeded! Limit for 10 TODOs."});
   }
 
   request.user = user;
@@ -40,8 +39,8 @@ function checksCreateTodosUserAvailability(request, response, next) {
 
 function checksTodoExists(request, response, next) {
   // Complete aqui
-  const { username } = request.headers;
-  const { idTODO }   = request.params;
+  const { username }   = request.headers;
+  const { id: idTODO } = request.params;
 
   const user = users.find( user => user.username === username );
   if(!user){
@@ -65,6 +64,16 @@ function checksTodoExists(request, response, next) {
 
 function findUserById(request, response, next) {
   // Complete aqui
+  const { id: userID } = request.params;
+  const user           = users.find( user => user.id === userID );
+
+  if(!user){
+    return response.status(404).json({ error: "User not found! "});
+  }
+
+  request.user = user;
+
+  return next();
 }
 
 app.post('/users', (request, response) => {
